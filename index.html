@@ -4,289 +4,411 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>3D Product Video Creator</title>
+    <title>Product Video Maker</title>
 
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Tahoma, sans-serif;
+            background: #111827;
+            color: white;
+        }
+
+        .header {
+            padding: 18px;
+            text-align: center;
+            background: #1f2937;
+            border-bottom: 1px solid #374151;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 25px;
+        }
+
+        .header p {
+            margin: 7px 0 0;
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        .app {
+            max-width: 1200px;
+            margin: auto;
+            padding: 15px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            font-size: 19px;
+        }
+
+        .field {
+            margin-bottom: 13px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #e5e7eb;
+            font-size: 14px;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 11px;
+            border-radius: 9px;
+            border: 1px solid #4b5563;
+            background: #111827;
+            color: white;
+            outline: none;
+        }
+
+        textarea {
+            min-height: 85px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #60a5fa;
+        }
+
+        input[type="file"] {
+            padding: 8px;
+        }
+
+        .animation-box {
+            background: #111827;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .animation-box h3 {
+            font-size: 15px;
+            margin: 0 0 10px;
+        }
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        button {
+            border: 0;
+            padding: 12px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        #previewBtn {
+            background: #2563eb;
+            color: white;
+        }
+
+        #createBtn {
+            background: #16a34a;
+            color: white;
+        }
+
+        #stopBtn {
+            background: #dc2626;
+            color: white;
+        }
+
+        #resetBtn {
+            background: #4b5563;
+            color: white;
+        }
+
+        button:hover {
+            opacity: .9;
+        }
+
+        .status {
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #111827;
+            color: #cbd5e1;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .preview-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .preview-title {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .phone {
+            width: min(100%, 430px);
+            aspect-ratio: 9 / 16;
+            background: #000;
+            border-radius: 20px;
+            padding: 8px;
+            box-shadow: 0 15px 50px rgba(0,0,0,.45);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border-radius: 14px;
+            background: #000;
+        }
+
+        .download-box {
+            width: min(100%, 430px);
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        #downloadLink {
+            display: none;
+            text-decoration: none;
+            background: #f59e0b;
+            color: #111827;
+            padding: 12px 18px;
+            border-radius: 9px;
+            font-weight: bold;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 850px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .preview-panel {
+                order: -1;
+            }
+
+            .phone {
+                width: min(100%, 350px);
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<header class="topbar">
-    <div>
-        <h1>🎬 3D Product Video Creator</h1>
-        <p>تصویر کو Animated Product Video میں تبدیل کریں</p>
-    </div>
-</header>
-
-
-<main class="editor">
-
-    <!-- LEFT CONTROL PANEL -->
-
-    <aside class="controls">
-
-        <section class="card">
-
-            <h2>Product</h2>
-
-            <label>Product Image</label>
-
-            <input
-                type="file"
-                id="productImage"
-                accept="image/*"
-            >
-
-
-            <label>Product Name</label>
-
-            <input
-                type="text"
-                id="productName"
-                value="Premium Shoes"
-            >
-
-
-            <label>Price</label>
-
-            <input
-                type="text"
-                id="productPrice"
-                value="Rs. 1,999"
-            >
-
-
-            <label>Delivery</label>
-
-            <input
-                type="text"
-                id="productDelivery"
-                value="FREE DELIVERY"
-            >
-
-
-            <label>Description</label>
-
-            <textarea id="productDescription">اعلیٰ معیار، خوبصورت ڈیزائن اور روزمرہ استعمال کے لیے بہترین۔</textarea>
-
-
-            <label>Brand</label>
-
-            <input
-                type="text"
-                id="productBrand"
-                value="WAQAR STORE"
-            >
-
-        </section>
-
-
-
-        <!-- TEXT ANIMATION CONTROLS -->
-
-        <section class="card">
-
-            <h2>Text Animations</h2>
-
-            <label>Product Name Animation</label>
-
-            <select id="nameAnimation">
-                <option value="static">Static</option>
-                <option value="slideLeft">Slide Left</option>
-                <option value="slideRight">Slide Right</option>
-                <option value="slideUp">Slide Up</option>
-                <option value="slideDown">Slide Down</option>
-                <option value="zoom">Zoom</option>
-                <option value="bounce">Bounce</option>
-                <option value="spin">360° Spin</option>
-                <option value="orbit">Satellite Orbit</option>
-                <option value="float">Floating</option>
-                <option value="shake">Shake</option>
-                <option value="pop">Pop</option>
-                <option value="glow">Glow</option>
-            </select>
-
-
-            <label>Price Animation</label>
-
-            <select id="priceAnimation">
-                <option value="orbit">Satellite Orbit</option>
-                <option value="static">Static</option>
-                <option value="slideLeft">Slide Left</option>
-                <option value="slideRight">Slide Right</option>
-                <option value="slideUp">Slide Up</option>
-                <option value="zoom">Zoom</option>
-                <option value="bounce">Bounce</option>
-                <option value="spin">360° Spin</option>
-                <option value="float">Floating</option>
-                <option value="shake">Shake</option>
-                <option value="pop">Pop</option>
-                <option value="glow">Glow</option>
-            </select>
-
-
-            <label>Delivery Animation</label>
-
-            <select id="deliveryAnimation">
-                <option value="float">Floating</option>
-                <option value="static">Static</option>
-                <option value="slideLeft">Slide Left</option>
-                <option value="slideRight">Slide Right</option>
-                <option value="slideUp">Slide Up</option>
-                <option value="zoom">Zoom</option>
-                <option value="bounce">Bounce</option>
-                <option value="spin">360° Spin</option>
-                <option value="orbit">Satellite Orbit</option>
-                <option value="shake">Shake</option>
-                <option value="pop">Pop</option>
-                <option value="glow">Glow</option>
-            </select>
-
-
-            <label>Brand Animation</label>
-
-            <select id="brandAnimation">
-                <option value="glow">Glow</option>
-                <option value="static">Static</option>
-                <option value="spin">360° Spin</option>
-                <option value="orbit">Satellite Orbit</option>
-                <option value="float">Floating</option>
-                <option value="zoom">Zoom</option>
-                <option value="bounce">Bounce</option>
-                <option value="shake">Shake</option>
-            </select>
-
-
-            <label>Description Animation</label>
-
-            <select id="descriptionAnimation">
-                <option value="static">Static</option>
-                <option value="fade">Fade</option>
-                <option value="slideUp">Slide Up</option>
-                <option value="slideDown">Slide Down</option>
-                <option value="float">Floating</option>
-            </select>
-
-        </section>
-
-
-
-        <!-- COLORS -->
-
-        <section class="card">
-
-            <h2>Design</h2>
-
-            <label>Background</label>
-
-            <input
-                type="color"
-                id="backgroundColor"
-                value="#101827"
-            >
-
-
-            <label>Text Color</label>
-
-            <input
-                type="color"
-                id="textColor"
-                value="#ffffff"
-            >
-
-
-            <label>Price Color</label>
-
-            <input
-                type="color"
-                id="priceColor"
-                value="#ffd166"
-            >
-
-
-            <label>Button Color</label>
-
-            <input
-                type="color"
-                id="buttonColor"
-                value="#2563eb"
-            >
-
-        </section>
-
-
-
-        <!-- VIDEO -->
-
-        <section class="card">
-
-            <h2>Video</h2>
-
-            <label>Duration</label>
-
-            <select id="duration">
-                <option value="10">10 Seconds</option>
-                <option value="12" selected>12 Seconds</option>
-                <option value="15">15 Seconds</option>
-            </select>
-
-
-            <div class="buttons">
-
-                <button id="previewBtn">
-                    ▶ Preview
-                </button>
-
-                <button
-                    id="createVideoBtn"
-                    class="primary"
-                >
-                    🎬 Create Video
-                </button>
+<div class="header">
+    <h1>🎬 Product Video Maker</h1>
+    <p>Product Image + Text + Animation → Short Video</p>
+</div>
+
+<div class="app">
+
+    <div class="layout">
+
+        <!-- CONTROLS -->
+        <div class="panel">
+
+            <h2>📦 Product Information</h2>
+
+            <div class="field">
+                <label>Product Image</label>
+                <input type="file" id="imageInput" accept="image/*">
+            </div>
+
+            <div class="field">
+                <label>Product Name</label>
+                <input id="productName" value="Beautiful Product">
+            </div>
+
+            <div class="field">
+                <label>Price</label>
+                <input id="price" value="Rs. 999">
+            </div>
+
+            <div class="field">
+                <label>Delivery Text</label>
+                <input id="delivery" value="FREE DELIVERY">
+            </div>
+
+            <div class="field">
+                <label>Brand / Name</label>
+                <input id="brand" value="WAQAR">
+            </div>
+
+            <div class="field">
+                <label>Description</label>
+                <textarea id="description">High quality product. Order now and get it delivered to your doorstep.</textarea>
+            </div>
+
+            <div class="field">
+                <label>Order Form Link</label>
+                <input id="orderLink" placeholder="https://example.com/order">
+                <div class="hint">
+                    یہ لنک ویڈیو میں نہیں لگایا جائے گا؛ آپ اسے Facebook/Instagram پوسٹ میں خود paste کر سکتے ہیں۔
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Video Duration</label>
+                <select id="duration">
+                    <option value="10">10 Seconds</option>
+                    <option value="12">12 Seconds</option>
+                    <option value="15" selected>15 Seconds</option>
+                </select>
+            </div>
+
+            <div class="animation-box">
+
+                <h3>✨ Text Animations</h3>
+
+                <div class="field">
+                    <label>Product Name Animation</label>
+                    <select id="nameAnimation">
+                        <option value="static">Static</option>
+                        <option value="slideLeft">Slide Left</option>
+                        <option value="slideRight">Slide Right</option>
+                        <option value="slideUp">Slide Up</option>
+                        <option value="slideDown">Slide Down</option>
+                        <option value="zoom">Zoom</option>
+                        <option value="bounce">Bounce</option>
+                        <option value="spin">360° Spin</option>
+                        <option value="orbit">Satellite Orbit</option>
+                        <option value="float">Floating</option>
+                        <option value="shake">Shake</option>
+                        <option value="pop">Pop</option>
+                        <option value="fade">Fade</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Price Animation</label>
+                    <select id="priceAnimation">
+                        <option value="static">Static</option>
+                        <option value="slideLeft">Slide Left</option>
+                        <option value="slideRight">Slide Right</option>
+                        <option value="slideUp">Slide Up</option>
+                        <option value="slideDown">Slide Down</option>
+                        <option value="zoom" selected>Zoom</option>
+                        <option value="bounce">Bounce</option>
+                        <option value="spin">360° Spin</option>
+                        <option value="orbit">Satellite Orbit</option>
+                        <option value="float">Floating</option>
+                        <option value="shake">Shake</option>
+                        <option value="pop">Pop</option>
+                        <option value="fade">Fade</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Delivery Animation</label>
+                    <select id="deliveryAnimation">
+                        <option value="static">Static</option>
+                        <option value="slideLeft">Slide Left</option>
+                        <option value="slideRight">Slide Right</option>
+                        <option value="slideUp">Slide Up</option>
+                        <option value="slideDown">Slide Down</option>
+                        <option value="zoom">Zoom</option>
+                        <option value="bounce">Bounce</option>
+                        <option value="spin">360° Spin</option>
+                        <option value="orbit">Satellite Orbit</option>
+                        <option value="float" selected>Floating</option>
+                        <option value="shake">Shake</option>
+                        <option value="pop">Pop</option>
+                        <option value="fade">Fade</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Brand Animation</label>
+                    <select id="brandAnimation">
+                        <option value="static">Static</option>
+                        <option value="slideLeft">Slide Left</option>
+                        <option value="slideRight">Slide Right</option>
+                        <option value="slideUp">Slide Up</option>
+                        <option value="slideDown">Slide Down</option>
+                        <option value="zoom">Zoom</option>
+                        <option value="bounce">Bounce</option>
+                        <option value="spin">360° Spin</option>
+                        <option value="orbit" selected>Satellite Orbit</option>
+                        <option value="float">Floating</option>
+                        <option value="shake">Shake</option>
+                        <option value="pop">Pop</option>
+                        <option value="fade">Fade</option>
+                    </select>
+                </div>
 
             </div>
 
+            <div class="btn-row">
+                <button id="previewBtn">▶ Preview</button>
+                <button id="createBtn">🎥 Create Video</button>
+                <button id="stopBtn">⛔ Stop</button>
+                <button id="resetBtn">↩ Reset</button>
+            </div>
 
-            <a
-                id="downloadVideo"
-                class="download"
-            >
-                ⬇️ ویڈیو محفوظ کریں
-            </a>
-
-
-            <p id="status">
-                Product image upload کریں۔
-            </p>
-
-        </section>
-
-    </aside>
-
-
-
-    <!-- PREVIEW -->
-
-    <section class="previewArea">
-
-        <div class="phone">
-
-            <canvas
-                id="videoCanvas"
-                width="540"
-                height="960"
-            ></canvas>
+            <div class="status" id="status">
+                Ready — پہلے Product Image لگائیں۔
+            </div>
 
         </div>
 
-    </section>
+        <!-- PREVIEW -->
+        <div class="panel preview-panel">
 
-</main>
+            <div class="preview-title">
+                <h2>🎞️ Live Preview</h2>
+            </div>
 
+            <div class="phone">
+                <canvas id="canvas" width="540" height="960"></canvas>
+            </div>
 
-<script src="js/animations.js"></script>
-<script src="js/video.js"></script>
-<script src="js/app.js"></script>
+            <div class="download-box">
+                <a id="downloadLink" download="product-video.webm">
+                    ⬇️ Download Video
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="app.js"></script>
 
 </body>
 </html>
