@@ -1,230 +1,207 @@
 <!DOCTYPE html>
 <html lang="ur" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Product Video Maker</title>
 
-    <title>Product Video Maker</title>
+<style>
+*{box-sizing:border-box}
+body{
+    margin:0;
+    font-family:Arial,Tahoma,sans-serif;
+    background:#111827;
+    color:#fff
+}
+.header{
+    padding:18px;
+    text-align:center;
+    background:#1f2937;
+    border-bottom:1px solid #374151
+}
+.header h1{margin:0;font-size:25px}
+.header p{margin:7px 0 0;color:#cbd5e1;font-size:14px}
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+.app{max-width:1200px;margin:auto;padding:15px}
 
-        body {
-            margin: 0;
-            font-family: Arial, Tahoma, sans-serif;
-            background: #111827;
-            color: white;
-        }
+.layout{
+    display:grid;
+    grid-template-columns:390px 1fr;
+    gap:20px
+}
+.panel{
+    background:#1f2937;
+    border:1px solid #374151;
+    border-radius:14px;
+    padding:16px
+}
+.panel h2{margin-top:0;font-size:19px}
 
-        .header {
-            padding: 18px;
-            text-align: center;
-            background: #1f2937;
-            border-bottom: 1px solid #374151;
-        }
+.field{margin-bottom:13px}
+label{
+    display:block;
+    margin-bottom:6px;
+    color:#e5e7eb;
+    font-size:14px
+}
+input,textarea,select{
+    width:100%;
+    padding:10px;
+    border-radius:9px;
+    border:1px solid #4b5563;
+    background:#111827;
+    color:#fff;
+    outline:none
+}
+textarea{min-height:80px;resize:vertical}
 
-        .header h1 {
-            margin: 0;
-            font-size: 25px;
-        }
+input:focus,textarea:focus,select:focus{
+    border-color:#60a5fa
+}
 
-        .header p {
-            margin: 7px 0 0;
-            color: #cbd5e1;
-            font-size: 14px;
-        }
+input[type=file]{padding:8px}
+input[type=color]{
+    height:42px;
+    padding:3px;
+    cursor:pointer
+}
 
-        .app {
-            max-width: 1200px;
-            margin: auto;
-            padding: 15px;
-        }
+.animation-box{
+    background:#111827;
+    padding:12px;
+    border-radius:10px;
+    margin-top:10px
+}
+.animation-box h3{
+    font-size:15px;
+    margin:0 0 10px
+}
 
-        .layout {
-            display: grid;
-            grid-template-columns: 380px 1fr;
-            gap: 20px;
-        }
+.text-control{
+    border:1px solid #374151;
+    border-radius:10px;
+    padding:11px;
+    margin-bottom:12px;
+    background:#172033
+}
+.text-control-title{
+    font-size:15px;
+    font-weight:bold;
+    margin-bottom:10px;
+    color:#fbbf24
+}
 
-        .panel {
-            background: #1f2937;
-            border: 1px solid #374151;
-            border-radius: 14px;
-            padding: 16px;
-        }
+.control-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px
+}
+.control-grid .full{grid-column:1/-1}
 
-        .panel h2 {
-            margin-top: 0;
-            font-size: 19px;
-        }
+.color-row{
+    display:grid;
+    grid-template-columns:55px 1fr;
+    gap:8px;
+    align-items:center
+}
 
-        .field {
-            margin-bottom: 13px;
-        }
+.color-code{
+    direction:ltr;
+    text-align:left
+}
 
-        label {
-            display: block;
-            margin-bottom: 6px;
-            color: #e5e7eb;
-            font-size: 14px;
-        }
+.bold-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#111827;
+    padding:9px;
+    border-radius:8px
+}
+.bold-row input{
+    width:auto
+}
 
-        input,
-        textarea,
-        select {
-            width: 100%;
-            padding: 11px;
-            border-radius: 9px;
-            border: 1px solid #4b5563;
-            background: #111827;
-            color: white;
-            outline: none;
-        }
+.btn-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:12px
+}
+button{
+    border:0;
+    padding:12px;
+    border-radius:9px;
+    cursor:pointer;
+    font-weight:bold;
+    font-size:14px
+}
+#previewBtn{background:#2563eb;color:#fff}
+#createBtn{background:#16a34a;color:#fff}
+#stopBtn{background:#dc2626;color:#fff}
+#resetBtn{background:#4b5563;color:#fff}
+button:hover{opacity:.9}
 
-        textarea {
-            min-height: 85px;
-            resize: vertical;
-        }
+.status{
+    margin-top:12px;
+    padding:10px;
+    border-radius:8px;
+    background:#111827;
+    color:#cbd5e1;
+    font-size:13px;
+    line-height:1.6
+}
 
-        input:focus,
-        textarea:focus,
-        select:focus {
-            border-color: #60a5fa;
-        }
+.preview-panel{
+    display:flex;
+    flex-direction:column;
+    align-items:center
+}
+.preview-title{width:100%;margin-bottom:10px}
 
-        input[type="file"] {
-            padding: 8px;
-        }
+.phone{
+    width:min(100%,430px);
+    aspect-ratio:9/16;
+    background:#000;
+    border-radius:20px;
+    padding:8px;
+    box-shadow:0 15px 50px rgba(0,0,0,.45)
+}
+canvas{
+    width:100%;
+    height:100%;
+    display:block;
+    border-radius:14px;
+    background:#000
+}
 
-        .animation-box {
-            background: #111827;
-            padding: 12px;
-            border-radius: 10px;
-            margin-top: 10px;
-        }
+.download-box{
+    width:min(100%,430px);
+    margin-top:15px;
+    text-align:center
+}
+#downloadLink{
+    display:none;
+    text-decoration:none;
+    background:#f59e0b;
+    color:#111827;
+    padding:12px 18px;
+    border-radius:9px;
+    font-weight:bold
+}
 
-        .animation-box h3 {
-            font-size: 15px;
-            margin: 0 0 10px;
-        }
+.hint{
+    font-size:12px;
+    color:#9ca3af;
+    margin-top:5px
+}
 
-        .btn-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-        button {
-            border: 0;
-            padding: 12px;
-            border-radius: 9px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        #previewBtn {
-            background: #2563eb;
-            color: white;
-        }
-
-        #createBtn {
-            background: #16a34a;
-            color: white;
-        }
-
-        #stopBtn {
-            background: #dc2626;
-            color: white;
-        }
-
-        #resetBtn {
-            background: #4b5563;
-            color: white;
-        }
-
-        button:hover {
-            opacity: .9;
-        }
-
-        .status {
-            margin-top: 12px;
-            padding: 10px;
-            border-radius: 8px;
-            background: #111827;
-            color: #cbd5e1;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        .preview-panel {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-        }
-
-        .preview-title {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .phone {
-            width: min(100%, 430px);
-            aspect-ratio: 9 / 16;
-            background: #000;
-            border-radius: 20px;
-            padding: 8px;
-            box-shadow: 0 15px 50px rgba(0,0,0,.45);
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-            border-radius: 14px;
-            background: #000;
-        }
-
-        .download-box {
-            width: min(100%, 430px);
-            margin-top: 15px;
-            text-align: center;
-        }
-
-        #downloadLink {
-            display: none;
-            text-decoration: none;
-            background: #f59e0b;
-            color: #111827;
-            padding: 12px 18px;
-            border-radius: 9px;
-            font-weight: bold;
-        }
-
-        .hint {
-            font-size: 12px;
-            color: #9ca3af;
-            margin-top: 5px;
-        }
-
-        @media (max-width: 850px) {
-            .layout {
-                grid-template-columns: 1fr;
-            }
-
-            .preview-panel {
-                order: -1;
-            }
-
-            .phone {
-                width: min(100%, 350px);
-            }
-        }
-    </style>
+@media(max-width:850px){
+    .layout{grid-template-columns:1fr}
+    .preview-panel{order:-1}
+    .phone{width:min(100%,350px)}
+}
+</style>
 </head>
 
 <body>
@@ -236,179 +213,458 @@
 
 <div class="app">
 
-    <div class="layout">
+<div class="layout">
 
-        <!-- CONTROLS -->
-        <div class="panel">
+<!-- ================= CONTROLS ================= -->
 
-            <h2>📦 Product Information</h2>
+<div class="panel">
 
-            <div class="field">
-                <label>Product Image</label>
-                <input type="file" id="imageInput" accept="image/*">
-            </div>
+<h2>📦 Product Information</h2>
 
-            <div class="field">
-                <label>Product Name</label>
-                <input id="productName" value="Beautiful Product">
-            </div>
+<div class="field">
+<label>Product Image</label>
+<input type="file" id="imageInput" accept="image/*">
+</div>
 
-            <div class="field">
-                <label>Price</label>
-                <input id="price" value="Rs. 999">
-            </div>
+<div class="field">
+<label>Product Name</label>
+<input id="productName" value="Beautiful Product">
+</div>
 
-            <div class="field">
-                <label>Delivery Text</label>
-                <input id="delivery" value="FREE DELIVERY">
-            </div>
+<div class="field">
+<label>Price</label>
+<input id="price" value="Rs. 999">
+</div>
 
-            <div class="field">
-                <label>Brand / Name</label>
-                <input id="brand" value="WAQAR">
-            </div>
+<div class="field">
+<label>Delivery Text</label>
+<input id="delivery" value="FREE DELIVERY">
+</div>
 
-            <div class="field">
-                <label>Description</label>
-                <textarea id="description">High quality product. Order now and get it delivered to your doorstep.</textarea>
-            </div>
+<div class="field">
+<label>Brand / Name</label>
+<input id="brand" value="WAQAR">
+</div>
 
-            <div class="field">
-                <label>Order Form Link</label>
-                <input id="orderLink" placeholder="https://example.com/order">
-                <div class="hint">
-                    یہ لنک ویڈیو میں نہیں لگایا جائے گا؛ آپ اسے Facebook/Instagram پوسٹ میں خود paste کر سکتے ہیں۔
-                </div>
-            </div>
+<div class="field">
+<label>Description</label>
+<textarea id="description">High quality product. Order now and get it delivered to your doorstep.</textarea>
+</div>
 
-            <div class="field">
-                <label>Video Duration</label>
-                <select id="duration">
-                    <option value="10">10 Seconds</option>
-                    <option value="12">12 Seconds</option>
-                    <option value="15" selected>15 Seconds</option>
-                </select>
-            </div>
+<div class="field">
+<label>Order Form Link</label>
+<input id="orderLink" placeholder="https://example.com/order">
+<div class="hint">
+یہ لنک ویڈیو میں نہیں لگایا جائے گا۔
+</div>
+</div>
 
-            <div class="animation-box">
+<div class="field">
+<label>Video Duration</label>
+<select id="duration">
+<option value="10">10 Seconds</option>
+<option value="12">12 Seconds</option>
+<option value="15" selected>15 Seconds</option>
+</select>
+</div>
 
-                <h3>✨ Text Animations</h3>
+<!-- ================= TEXT CONTROLS ================= -->
 
-                <div class="field">
-                    <label>Product Name Animation</label>
-                    <select id="nameAnimation">
-                        <option value="static">Static</option>
-                        <option value="slideLeft">Slide Left</option>
-                        <option value="slideRight">Slide Right</option>
-                        <option value="slideUp">Slide Up</option>
-                        <option value="slideDown">Slide Down</option>
-                        <option value="zoom">Zoom</option>
-                        <option value="bounce">Bounce</option>
-                        <option value="spin">360° Spin</option>
-                        <option value="orbit">Satellite Orbit</option>
-                        <option value="float">Floating</option>
-                        <option value="shake">Shake</option>
-                        <option value="pop">Pop</option>
-                        <option value="fade">Fade</option>
-                    </select>
-                </div>
+<div class="animation-box">
 
-                <div class="field">
-                    <label>Price Animation</label>
-                    <select id="priceAnimation">
-                        <option value="static">Static</option>
-                        <option value="slideLeft">Slide Left</option>
-                        <option value="slideRight">Slide Right</option>
-                        <option value="slideUp">Slide Up</option>
-                        <option value="slideDown">Slide Down</option>
-                        <option value="zoom" selected>Zoom</option>
-                        <option value="bounce">Bounce</option>
-                        <option value="spin">360° Spin</option>
-                        <option value="orbit">Satellite Orbit</option>
-                        <option value="float">Floating</option>
-                        <option value="shake">Shake</option>
-                        <option value="pop">Pop</option>
-                        <option value="fade">Fade</option>
-                    </select>
-                </div>
+<h3>✨ Text Style & Animation</h3>
 
-                <div class="field">
-                    <label>Delivery Animation</label>
-                    <select id="deliveryAnimation">
-                        <option value="static">Static</option>
-                        <option value="slideLeft">Slide Left</option>
-                        <option value="slideRight">Slide Right</option>
-                        <option value="slideUp">Slide Up</option>
-                        <option value="slideDown">Slide Down</option>
-                        <option value="zoom">Zoom</option>
-                        <option value="bounce">Bounce</option>
-                        <option value="spin">360° Spin</option>
-                        <option value="orbit">Satellite Orbit</option>
-                        <option value="float" selected>Floating</option>
-                        <option value="shake">Shake</option>
-                        <option value="pop">Pop</option>
-                        <option value="fade">Fade</option>
-                    </select>
-                </div>
+<!-- BRAND -->
 
-                <div class="field">
-                    <label>Brand Animation</label>
-                    <select id="brandAnimation">
-                        <option value="static">Static</option>
-                        <option value="slideLeft">Slide Left</option>
-                        <option value="slideRight">Slide Right</option>
-                        <option value="slideUp">Slide Up</option>
-                        <option value="slideDown">Slide Down</option>
-                        <option value="zoom">Zoom</option>
-                        <option value="bounce">Bounce</option>
-                        <option value="spin">360° Spin</option>
-                        <option value="orbit" selected>Satellite Orbit</option>
-                        <option value="float">Floating</option>
-                        <option value="shake">Shake</option>
-                        <option value="pop">Pop</option>
-                        <option value="fade">Fade</option>
-                    </select>
-                </div>
+<div class="text-control">
 
-            </div>
+<div class="text-control-title">🏷️ Brand</div>
 
-            <div class="btn-row">
-                <button id="previewBtn">▶ Preview</button>
-                <button id="createBtn">🎥 Create Video</button>
-                <button id="stopBtn">⛔ Stop</button>
-                <button id="resetBtn">↩ Reset</button>
-            </div>
+<div class="control-grid">
 
-            <div class="status" id="status">
-                Ready — پہلے Product Image لگائیں۔
-            </div>
+<div>
+<label>Font</label>
+<select id="brandFont">
+<option value="Arial">Arial</option>
+<option value="Arial Black" selected>Arial Black</option>
+<option value="Georgia">Georgia</option>
+<option value="Times New Roman">Times New Roman</option>
+<option value="Courier New">Courier New</option>
+<option value="Impact">Impact</option>
+<option value="Verdana">Verdana</option>
+<option value="Trebuchet MS">Trebuchet MS</option>
+<option value="Comic Sans MS">Comic Sans MS</option>
+<option value="serif">Fancy Serif</option>
+<option value="cursive">Fancy Cursive</option>
+<option value="fantasy">Fantasy</option>
+</select>
+</div>
 
-        </div>
+<div>
+<label>Size</label>
+<input id="brandSize" type="number" min="10" max="120" value="50">
+</div>
 
-        <!-- PREVIEW -->
-        <div class="panel preview-panel">
+<div class="full">
+<label>Color</label>
+<div class="color-row">
+<input id="brandColor" type="color" value="#fbbf24">
+<input id="brandColorCode" class="color-code" value="#fbbF24">
+</div>
+</div>
 
-            <div class="preview-title">
-                <h2>🎞️ Live Preview</h2>
-            </div>
+<div>
+<label>Style</label>
+<select id="brandStyle">
+<option value="normal">Normal</option>
+<option value="3d" selected>3D</option>
+</select>
+</div>
 
-            <div class="phone">
-                <canvas id="canvas" width="540" height="960"></canvas>
-            </div>
+<div class="bold-row">
+<input id="brandBold" type="checkbox" checked>
+<label for="brandBold">Bold</label>
+</div>
 
-            <div class="download-box">
-                <a id="downloadLink" download="product-video.webm">
-                    ⬇️ Download Video
-                </a>
-            </div>
+<div class="full">
+<label>Animation</label>
+<select id="brandAnimation">
+<option value="static">Static</option>
+<option value="slideLeft">Slide Left</option>
+<option value="slideRight">Slide Right</option>
+<option value="slideUp">Slide Up</option>
+<option value="slideDown">Slide Down</option>
+<option value="zoom">Zoom</option>
+<option value="bounce">Bounce</option>
+<option value="spin">360° Spin</option>
+<option value="orbit" selected>Satellite Orbit</option>
+<option value="float">Floating</option>
+<option value="shake">Shake</option>
+<option value="pop">Pop</option>
+<option value="fade">Fade</option>
+</select>
+</div>
 
-        </div>
+</div>
+</div>
 
-    </div>
+<!-- PRODUCT NAME -->
+
+<div class="text-control">
+
+<div class="text-control-title">📝 Product Name</div>
+
+<div class="control-grid">
+
+<div>
+<label>Font</label>
+<select id="nameFont">
+<option value="Arial" selected>Arial</option>
+<option value="Arial Black">Arial Black</option>
+<option value="Georgia">Georgia</option>
+<option value="Times New Roman">Times New Roman</option>
+<option value="Courier New">Courier New</option>
+<option value="Impact">Impact</option>
+<option value="Verdana">Verdana</option>
+<option value="Trebuchet MS">Trebuchet MS</option>
+<option value="Comic Sans MS">Comic Sans MS</option>
+<option value="serif">Fancy Serif</option>
+<option value="cursive">Fancy Cursive</option>
+<option value="fantasy">Fantasy</option>
+</select>
+</div>
+
+<div>
+<label>Size</label>
+<input id="nameSize" type="number" min="10" max="120" value="38">
+</div>
+
+<div class="full">
+<label>Color</label>
+<div class="color-row">
+<input id="nameColor" type="color" value="#ffffff">
+<input id="nameColorCode" class="color-code" value="#FFFFFF">
+</div>
+</div>
+
+<div>
+<label>Style</label>
+<select id="nameStyle">
+<option value="normal" selected>Normal</option>
+<option value="3d">3D</option>
+</select>
+</div>
+
+<div class="bold-row">
+<input id="nameBold" type="checkbox" checked>
+<label for="nameBold">Bold</label>
+</div>
+
+<div class="full">
+<label>Animation</label>
+<select id="nameAnimation">
+<option value="static">Static</option>
+<option value="slideLeft" selected>Slide Left</option>
+<option value="slideRight">Slide Right</option>
+<option value="slideUp">Slide Up</option>
+<option value="slideDown">Slide Down</option>
+<option value="zoom">Zoom</option>
+<option value="bounce">Bounce</option>
+<option value="spin">360° Spin</option>
+<option value="orbit">Satellite Orbit</option>
+<option value="float">Floating</option>
+<option value="shake">Shake</option>
+<option value="pop">Pop</option>
+<option value="fade">Fade</option>
+</select>
+</div>
+
+</div>
+</div>
+
+<!-- PRICE -->
+
+<div class="text-control">
+
+<div class="text-control-title">💰 Price</div>
+
+<div class="control-grid">
+
+<div>
+<label>Font</label>
+<select id="priceFont">
+<option value="Arial">Arial</option>
+<option value="Arial Black">Arial Black</option>
+<option value="Georgia">Georgia</option>
+<option value="Times New Roman">Times New Roman</option>
+<option value="Courier New">Courier New</option>
+<option value="Impact" selected>Impact</option>
+<option value="Verdana">Verdana</option>
+<option value="Trebuchet MS">Trebuchet MS</option>
+<option value="Comic Sans MS">Comic Sans MS</option>
+<option value="serif">Fancy Serif</option>
+<option value="cursive">Fancy Cursive</option>
+<option value="fantasy">Fantasy</option>
+</select>
+</div>
+
+<div>
+<label>Size</label>
+<input id="priceSize" type="number" min="10" max="140" value="42">
+</div>
+
+<div class="full">
+<label>Color</label>
+<div class="color-row">
+<input id="priceColor" type="color" value="#fde047">
+<input id="priceColorCode" class="color-code" value="#FDE047">
+</div>
+</div>
+
+<div>
+<label>Style</label>
+<select id="priceStyle">
+<option value="normal">Normal</option>
+<option value="3d" selected>3D</option>
+</select>
+</div>
+
+<div class="bold-row">
+<input id="priceBold" type="checkbox" checked>
+<label for="priceBold">Bold</label>
+</div>
+
+<div class="full">
+<label>Animation</label>
+<select id="priceAnimation">
+<option value="static">Static</option>
+<option value="slideLeft">Slide Left</option>
+<option value="slideRight">Slide Right</option>
+<option value="slideUp">Slide Up</option>
+<option value="slideDown">Slide Down</option>
+<option value="zoom" selected>Zoom</option>
+<option value="bounce">Bounce</option>
+<option value="spin">360° Spin</option>
+<option value="orbit">Satellite Orbit</option>
+<option value="float">Floating</option>
+<option value="shake">Shake</option>
+<option value="pop">Pop</option>
+<option value="fade">Fade</option>
+</select>
+</div>
+
+</div>
+</div>
+
+<!-- DELIVERY -->
+
+<div class="text-control">
+
+<div class="text-control-title">🚚 Delivery</div>
+
+<div class="control-grid">
+
+<div>
+<label>Font</label>
+<select id="deliveryFont">
+<option value="Arial">Arial</option>
+<option value="Arial Black" selected>Arial Black</option>
+<option value="Georgia">Georgia</option>
+<option value="Times New Roman">Times New Roman</option>
+<option value="Courier New">Courier New</option>
+<option value="Impact">Impact</option>
+<option value="Verdana">Verdana</option>
+<option value="Trebuchet MS">Trebuchet MS</option>
+<option value="Comic Sans MS">Comic Sans MS</option>
+<option value="serif">Fancy Serif</option>
+<option value="cursive">Fancy Cursive</option>
+<option value="fantasy">Fantasy</option>
+</select>
+</div>
+
+<div>
+<label>Size</label>
+<input id="deliverySize" type="number" min="10" max="120" value="30">
+</div>
+
+<div class="full">
+<label>Color</label>
+<div class="color-row">
+<input id="deliveryColor" type="color" value="#86efac">
+<input id="deliveryColorCode" class="color-code" value="#86EFAC">
+</div>
+</div>
+
+<div>
+<label>Style</label>
+<select id="deliveryStyle">
+<option value="normal" selected>Normal</option>
+<option value="3d">3D</option>
+</select>
+</div>
+
+<div class="bold-row">
+<input id="deliveryBold" type="checkbox" checked>
+<label for="deliveryBold">Bold</label>
+</div>
+
+<div class="full">
+<label>Animation</label>
+<select id="deliveryAnimation">
+<option value="static">Static</option>
+<option value="slideLeft">Slide Left</option>
+<option value="slideRight">Slide Right</option>
+<option value="slideUp">Slide Up</option>
+<option value="slideDown">Slide Down</option>
+<option value="zoom">Zoom</option>
+<option value="bounce">Bounce</option>
+<option value="spin">360° Spin</option>
+<option value="orbit">Satellite Orbit</option>
+<option value="float" selected>Floating</option>
+<option value="shake">Shake</option>
+<option value="pop">Pop</option>
+<option value="fade">Fade</option>
+</select>
+</div>
+
+</div>
+</div>
+
+<!-- DESCRIPTION -->
+
+<div class="text-control">
+
+<div class="text-control-title">📄 Description</div>
+
+<div class="control-grid">
+
+<div>
+<label>Font</label>
+<select id="descriptionFont">
+<option value="Arial" selected>Arial</option>
+<option value="Arial Black">Arial Black</option>
+<option value="Georgia">Georgia</option>
+<option value="Times New Roman">Times New Roman</option>
+<option value="Courier New">Courier New</option>
+<option value="Impact">Impact</option>
+<option value="Verdana">Verdana</option>
+<option value="Trebuchet MS">Trebuchet MS</option>
+<option value="Comic Sans MS">Comic Sans MS</option>
+<option value="serif">Fancy Serif</option>
+<option value="cursive">Fancy Cursive</option>
+<option value="fantasy">Fantasy</option>
+</select>
+</div>
+
+<div>
+<label>Size</label>
+<input id="descriptionSize" type="number" min="8" max="70" value="18">
+</div>
+
+<div class="full">
+<label>Color</label>
+<div class="color-row">
+<input id="descriptionColor" type="color" value="#f3f4f6">
+<input id="descriptionColorCode" class="color-code" value="#F3F4F6">
+</div>
+</div>
+
+<div>
+<label>Style</label>
+<select id="descriptionStyle">
+<option value="normal" selected>Normal</option>
+<option value="3d">3D</option>
+</select>
+</div>
+
+<div class="bold-row">
+<input id="descriptionBold" type="checkbox">
+<label for="descriptionBold">Bold</label>
+</div>
+
+</div>
+</div>
 
 </div>
 
-<script src="app.js"></script>
+<!-- BUTTONS -->
 
+<div class="btn-row">
+<button id="previewBtn">▶ Preview</button>
+<button id="createBtn">🎥 Create Video</button>
+<button id="stopBtn">⛔ Stop</button>
+<button id="resetBtn">↩ Reset</button>
+</div>
+
+<div class="status" id="status">
+Ready — پہلے Product Image لگائیں۔
+</div>
+
+</div>
+
+<!-- ================= PREVIEW ================= -->
+
+<div class="panel preview-panel">
+
+<div class="preview-title">
+<h2>🎞️ Live Preview</h2>
+</div>
+
+<div class="phone">
+<canvas id="canvas" width="540" height="960"></canvas>
+</div>
+
+<div class="download-box">
+<a id="downloadLink" download="product-video.webm">
+⬇️ Download Video
+</a>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
