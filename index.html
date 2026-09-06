@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>3D Product Video Creator</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+    <div>
+        <h1>🎬 3D Product Video Creator</h1>
+        <p>تصویر کو Animated Product Video میں تبدیل کریں</p>
+    </div>
+</header>
+
+
+<main class="editor">
+
+    <!-- LEFT CONTROL PANEL -->
+
+    <aside class="controls">
+
+        <section class="card">
+
+            <h2>Product</h2>
+
+            <label>Product Image</label>
+
+            <input
+                type="file"
+                id="productImage"
+                accept="image/*"
+            >
+
+
+            <label>Product Name</label>
+
+            <input
+                type="text"
+                id="productName"
+                value="Premium Shoes"
+            >
+
+
+            <label>Price</label>
+
+            <input
+                type="text"
+                id="productPrice"
+                value="Rs. 1,999"
+            >
+
+
+            <label>Delivery</label>
+
+            <input
+                type="text"
+                id="productDelivery"
+                value="FREE DELIVERY"
+            >
+
+
+            <label>Description</label>
+
+            <textarea id="productDescription">اعلیٰ معیار، خوبصورت ڈیزائن اور روزمرہ استعمال کے لیے بہترین۔</textarea>
+
+
+            <label>Brand</label>
+
+            <input
+                type="text"
+                id="productBrand"
+                value="WAQAR STORE"
+            >
+
+        </section>
+
+
+
+        <!-- TEXT ANIMATION CONTROLS -->
+
+        <section class="card">
+
+            <h2>Text Animations</h2>
+
+            <label>Product Name Animation</label>
+
+            <select id="nameAnimation">
+                <option value="static">Static</option>
+                <option value="slideLeft">Slide Left</option>
+                <option value="slideRight">Slide Right</option>
+                <option value="slideUp">Slide Up</option>
+                <option value="slideDown">Slide Down</option>
+                <option value="zoom">Zoom</option>
+                <option value="bounce">Bounce</option>
+                <option value="spin">360° Spin</option>
+                <option value="orbit">Satellite Orbit</option>
+                <option value="float">Floating</option>
+                <option value="shake">Shake</option>
+                <option value="pop">Pop</option>
+                <option value="glow">Glow</option>
+            </select>
+
+
+            <label>Price Animation</label>
+
+            <select id="priceAnimation">
+                <option value="orbit">Satellite Orbit</option>
+                <option value="static">Static</option>
+                <option value="slideLeft">Slide Left</option>
+                <option value="slideRight">Slide Right</option>
+                <option value="slideUp">Slide Up</option>
+                <option value="zoom">Zoom</option>
+                <option value="bounce">Bounce</option>
+                <option value="spin">360° Spin</option>
+                <option value="float">Floating</option>
+                <option value="shake">Shake</option>
+                <option value="pop">Pop</option>
+                <option value="glow">Glow</option>
+            </select>
+
+
+            <label>Delivery Animation</label>
+
+            <select id="deliveryAnimation">
+                <option value="float">Floating</option>
+                <option value="static">Static</option>
+                <option value="slideLeft">Slide Left</option>
+                <option value="slideRight">Slide Right</option>
+                <option value="slideUp">Slide Up</option>
+                <option value="zoom">Zoom</option>
+                <option value="bounce">Bounce</option>
+                <option value="spin">360° Spin</option>
+                <option value="orbit">Satellite Orbit</option>
+                <option value="shake">Shake</option>
+                <option value="pop">Pop</option>
+                <option value="glow">Glow</option>
+            </select>
+
+
+            <label>Brand Animation</label>
+
+            <select id="brandAnimation">
+                <option value="glow">Glow</option>
+                <option value="static">Static</option>
+                <option value="spin">360° Spin</option>
+                <option value="orbit">Satellite Orbit</option>
+                <option value="float">Floating</option>
+                <option value="zoom">Zoom</option>
+                <option value="bounce">Bounce</option>
+                <option value="shake">Shake</option>
+            </select>
+
+
+            <label>Description Animation</label>
+
+            <select id="descriptionAnimation">
+                <option value="static">Static</option>
+                <option value="fade">Fade</option>
+                <option value="slideUp">Slide Up</option>
+                <option value="slideDown">Slide Down</option>
+                <option value="float">Floating</option>
+            </select>
+
+        </section>
+
+
+
+        <!-- COLORS -->
+
+        <section class="card">
+
+            <h2>Design</h2>
+
+            <label>Background</label>
+
+            <input
+                type="color"
+                id="backgroundColor"
+                value="#101827"
+            >
+
+
+            <label>Text Color</label>
+
+            <input
+                type="color"
+                id="textColor"
+                value="#ffffff"
+            >
+
+
+            <label>Price Color</label>
+
+            <input
+                type="color"
+                id="priceColor"
+                value="#ffd166"
+            >
+
+
+            <label>Button Color</label>
+
+            <input
+                type="color"
+                id="buttonColor"
+                value="#2563eb"
+            >
+
+        </section>
+
+
+
+        <!-- VIDEO -->
+
+        <section class="card">
+
+            <h2>Video</h2>
+
+            <label>Duration</label>
+
+            <select id="duration">
+                <option value="10">10 Seconds</option>
+                <option value="12" selected>12 Seconds</option>
+                <option value="15">15 Seconds</option>
+            </select>
+
+
+            <div class="buttons">
+
+                <button id="previewBtn">
+                    ▶ Preview
+                </button>
+
+                <button
+                    id="createVideoBtn"
+                    class="primary"
+                >
+                    🎬 Create Video
+                </button>
+
+            </div>
+
+
+            <a
+                id="downloadVideo"
+                class="download"
+            >
+                ⬇️ ویڈیو محفوظ کریں
+            </a>
+
+
+            <p id="status">
+                Product image upload کریں۔
+            </p>
+
+        </section>
+
+    </aside>
+
+
+
+    <!-- PREVIEW -->
+
+    <section class="previewArea">
+
+        <div class="phone">
+
+            <canvas
+                id="videoCanvas"
+                width="540"
+                height="960"
+            ></canvas>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script src="js/animations.js"></script>
+<script src="js/video.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
