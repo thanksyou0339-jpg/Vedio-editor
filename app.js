@@ -1,1294 +1,1337 @@
 (() => {
 
-    "use strict";
+"use strict";
+
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+const imageInput=document.getElementById("imageInput");
+
+const productName=document.getElementById("productName");
+const price=document.getElementById("price");
+const delivery=document.getElementById("delivery");
+const brand=document.getElementById("brand");
+const description=document.getElementById("description");
+const orderLink=document.getElementById("orderLink");
+
+const durationInput=document.getElementById("duration");
+
+const previewBtn=document.getElementById("previewBtn");
+const createBtn=document.getElementById("createBtn");
+const stopBtn=document.getElementById("stopBtn");
+const resetBtn=document.getElementById("resetBtn");
+
+const statusBox=document.getElementById("status");
+const downloadLink=document.getElementById("downloadLink");
 
-    // =========================
-    // ELEMENTS
-    // =========================
+let productImage=null;
+let animationFrame=null;
+let previewRunning=false;
+let recording=false;
+let recorder=null;
+let recordedChunks=[];
+let videoUrl=null;
 
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
 
-    const imageInput = document.getElementById("imageInput");
+// ==========================================
+// TEXT CONFIG
+// ==========================================
 
-    const productName = document.getElementById("productName");
-    const price = document.getElementById("price");
-    const delivery = document.getElementById("delivery");
-    const brand = document.getElementById("brand");
-    const description = document.getElementById("description");
-    const orderLink = document.getElementById("orderLink");
+const textConfig={
 
-    const durationInput = document.getElementById("duration");
+brand:{
+font:"brandFont",
+size:"brandSize",
+color:"brandColor",
+colorCode:"brandColorCode",
+bold:"brandBold",
+style:"brandStyle",
+animation:"brandAnimation"
+},
 
-    const nameAnimation = document.getElementById("nameAnimation");
-    const priceAnimation = document.getElementById("priceAnimation");
-    const deliveryAnimation = document.getElementById("deliveryAnimation");
-    const brandAnimation = document.getElementById("brandAnimation");
+name:{
+font:"nameFont",
+size:"nameSize",
+color:"nameColor",
+colorCode:"nameColorCode",
+bold:"nameBold",
+style:"nameStyle",
+animation:"nameAnimation"
+},
 
-    const previewBtn = document.getElementById("previewBtn");
-    const createBtn = document.getElementById("createBtn");
-    const stopBtn = document.getElementById("stopBtn");
-    const resetBtn = document.getElementById("resetBtn");
+price:{
+font:"priceFont",
+size:"priceSize",
+color:"priceColor",
+colorCode:"priceColorCode",
+bold:"priceBold",
+style:"priceStyle",
+animation:"priceAnimation"
+},
 
-    const statusBox = document.getElementById("status");
-    const downloadLink = document.getElementById("downloadLink");
+delivery:{
+font:"deliveryFont",
+size:"deliverySize",
+color:"deliveryColor",
+colorCode:"deliveryColorCode",
+bold:"deliveryBold",
+style:"deliveryStyle",
+animation:"deliveryAnimation"
+},
 
-    // =========================
-    // VARIABLES
-    // =========================
+description:{
+font:"descriptionFont",
+size:"descriptionSize",
+color:"descriptionColor",
+colorCode:"descriptionColorCode",
+bold:"descriptionBold",
+style:"descriptionStyle"
+}
 
-    let productImage = null;
+};
 
-    let animationFrame = null;
 
-    let previewRunning = false;
+// ==========================================
+// GET TEXT STYLE
+// ==========================================
 
-    let recording = false;
+function getTextStyle(type){
 
-    let recorder = null;
+const c=textConfig[type];
 
-    let recordedChunks = [];
+return {
 
-    let videoUrl = null;
+font:document.getElementById(c.font).value,
 
-    // =========================
-    // HELPERS
-    // =========================
+size:Number(
+document.getElementById(c.size).value
+)||20,
 
-    function clamp(value, min, max) {
-        return Math.max(min, Math.min(max, value));
-    }
+color:document.getElementById(c.color).value,
 
-    function easeOut(t) {
-        return 1 - Math.pow(1 - t, 3);
-    }
+bold:document.getElementById(c.bold).checked,
 
-    function easeInOut(t) {
-        return t < 0.5
-            ? 2 * t * t
-            : 1 - Math.pow(-2 * t + 2, 2) / 2;
-    }
+style:document.getElementById(c.style).value,
 
-    function setStatus(text) {
-        statusBox.textContent = text;
-    }
+animation:c.animation
+?document.getElementById(c.animation).value
+:"static"
 
-    function roundedRect(ctx, x, y, w, h, r) {
+};
 
-        r = Math.min(r, w / 2, h / 2);
+}
 
-        ctx.beginPath();
 
-        ctx.moveTo(x + r, y);
+// ==========================================
+// COLOR SYNC
+// ==========================================
 
-        ctx.lineTo(x + w - r, y);
+Object.keys(textConfig).forEach(type=>{
 
-        ctx.quadraticCurveTo(
-            x + w,
-            y,
-            x + w,
-            y + r
-        );
+const c=textConfig[type];
 
-        ctx.lineTo(x + w, y + h - r);
+const color=document.getElementById(c.color);
+const code=document.getElementById(c.colorCode);
 
-        ctx.quadraticCurveTo(
-            x + w,
-            y + h,
-            x + w - r,
-            y + h
-        );
+color.addEventListener("input",()=>{
 
-        ctx.lineTo(x + r, y + h);
+code.value=color.value.toUpperCase();
 
-        ctx.quadraticCurveTo(
-            x,
-            y + h,
-            x,
-            y + h - r
-        );
+renderFrame(0);
 
-        ctx.lineTo(x, y + r);
+});
 
-        ctx.quadraticCurveTo(
-            x,
-            y,
-            x + r,
-            y
-        );
+code.addEventListener("change",()=>{
 
-        ctx.closePath();
-    }
+let value=code.value.trim();
 
-    function wrapText(text, maxWidth, fontSize) {
+if(!value.startsWith("#")){
+value="#"+value;
+}
 
-        ctx.font = `bold ${fontSize}px Arial`;
+if(/^#[0-9A-Fa-f]{6}$/.test(value)){
 
-        const words = String(text || "").split(/\s+/);
+color.value=value;
 
-        const lines = [];
+code.value=value.toUpperCase();
 
-        let current = "";
+renderFrame(0);
 
-        for (const word of words) {
+}
 
-            const test = current
-                ? current + " " + word
-                : word;
+});
 
-            if (ctx.measureText(test).width <= maxWidth) {
-                current = test;
-            } else {
+});
 
-                if (current) {
-                    lines.push(current);
-                }
 
-                current = word;
-            }
-        }
+// ==========================================
+// HELPERS
+// ==========================================
 
-        if (current) {
-            lines.push(current);
-        }
+function clamp(v,min,max){
+return Math.max(min,Math.min(max,v));
+}
 
-        return lines;
-    }
+function easeOut(t){
+return 1-Math.pow(1-t,3);
+}
 
-    // =========================
-    // IMAGE LOAD
-    // =========================
+function setStatus(text){
+statusBox.textContent=text;
+}
 
-    imageInput.addEventListener("change", function () {
+function roundedRect(ctx,x,y,w,h,r){
 
-        const file = this.files && this.files[0];
+r=Math.min(r,w/2,h/2);
 
-        if (!file) {
-            return;
-        }
+ctx.beginPath();
 
-        if (!file.type.startsWith("image/")) {
+ctx.moveTo(x+r,y);
+ctx.lineTo(x+w-r,y);
 
-            setStatus("یہ image file نہیں ہے۔");
+ctx.quadraticCurveTo(x+w,y,x+w,y+r);
 
-            return;
-        }
+ctx.lineTo(x+w,y+h-r);
 
-        const reader = new FileReader();
+ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
 
-        reader.onload = function (event) {
+ctx.lineTo(x+r,y+h);
 
-            const img = new Image();
+ctx.quadraticCurveTo(x,y+h,x,y+h-r);
 
-            img.onload = function () {
+ctx.lineTo(x,y+r);
 
-                productImage = img;
+ctx.quadraticCurveTo(x,y,x+r,y);
 
-                setStatus(
-                    "✅ Product image successfully loaded."
-                );
+ctx.closePath();
 
-                renderFrame(0);
-            };
+}
 
-            img.onerror = function () {
 
-                setStatus(
-                    "❌ Image load نہیں ہو سکی۔"
-                );
+// ==========================================
+// IMAGE
+// ==========================================
 
-            };
+imageInput.addEventListener("change",function(){
 
-            img.src = event.target.result;
-        };
+const file=this.files&&this.files[0];
 
-        reader.onerror = function () {
+if(!file)return;
 
-            setStatus(
-                "❌ File read نہیں ہو سکی۔"
-            );
+if(!file.type.startsWith("image/")){
 
-        };
+setStatus("❌ یہ image file نہیں ہے۔");
+return;
 
-        reader.readAsDataURL(file);
+}
 
-    });
+const reader=new FileReader();
 
-    // =========================
-    // ANIMATION CALCULATION
-    // =========================
+reader.onload=e=>{
 
-    function getAnimation(type, progress) {
+const img=new Image();
 
-        let x = 0;
-        let y = 0;
-        let scale = 1;
-        let rotation = 0;
-        let opacity = 1;
+img.onload=()=>{
 
-        const p = clamp(progress, 0, 1);
+productImage=img;
 
-        switch (type) {
+setStatus("✅ Product image successfully loaded.");
 
-            case "static":
+renderFrame(0);
 
-                break;
+};
 
-            case "slideLeft":
+img.onerror=()=>{
 
-                x = 500 * (1 - easeOut(p));
+setStatus("❌ Image load نہیں ہو سکی۔");
 
-                break;
+};
 
-            case "slideRight":
+img.src=e.target.result;
 
-                x = -500 * (1 - easeOut(p));
+};
 
-                break;
+reader.onerror=()=>{
 
-            case "slideUp":
+setStatus("❌ File read نہیں ہو سکی۔");
 
-                y = 400 * (1 - easeOut(p));
+};
 
-                break;
+reader.readAsDataURL(file);
 
-            case "slideDown":
+});
 
-                y = -400 * (1 - easeOut(p));
 
-                break;
+// ==========================================
+// ANIMATION
+// ==========================================
 
-            case "zoom":
+function getAnimation(type,p){
 
-                scale = 0.15 + 0.85 * easeOut(p);
+let x=0;
+let y=0;
+let scale=1;
+let rotation=0;
+let opacity=1;
 
-                break;
+p=clamp(p,0,1);
 
-            case "bounce": {
+switch(type){
 
-                const bounce =
-                    Math.abs(Math.sin(p * Math.PI * 3))
-                    * (1 - p);
+case"static":
+break;
 
-                y = -35 * bounce;
+case"slideLeft":
+x=500*(1-easeOut(p));
+break;
 
-                break;
-            }
+case"slideRight":
+x=-500*(1-easeOut(p));
+break;
 
-            case "spin":
+case"slideUp":
+y=400*(1-easeOut(p));
+break;
 
-                rotation = p * Math.PI * 2;
+case"slideDown":
+y=-400*(1-easeOut(p));
+break;
 
-                scale = 0.7 + 0.3 * easeOut(p);
+case"zoom":
+scale=.15+.85*easeOut(p);
+break;
 
-                break;
+case"bounce":
+y=-35*Math.abs(Math.sin(p*Math.PI*3))*(1-p);
+break;
 
-            case "orbit": {
+case"spin":
+rotation=p*Math.PI*2;
+scale=.7+.3*easeOut(p);
+break;
 
-                // Satellite-style elliptical movement
+case"orbit":{
 
-                const angle =
-                    p * Math.PI * 2;
+const angle=p*Math.PI*2;
 
-                x = Math.cos(angle) * 115;
+x=Math.cos(angle)*115;
+y=Math.sin(angle)*32;
 
-                y = Math.sin(angle) * 32;
+const perspective=(Math.sin(angle)+1)/2;
 
-                const perspective =
-                    (Math.sin(angle) + 1) / 2;
+scale=.72+perspective*.35;
 
-                scale =
-                    0.72 +
-                    perspective * 0.35;
+rotation=angle+Math.PI/2;
 
-                rotation =
-                    angle + Math.PI / 2;
+opacity=.55+perspective*.45;
 
-                opacity =
-                    0.55 +
-                    perspective * 0.45;
+break;
+}
 
-                break;
-            }
+case"float":
 
-            case "float":
+y=Math.sin(p*Math.PI*4)*22;
+rotation=Math.sin(p*Math.PI*2)*.04;
 
-                y =
-                    Math.sin(p * Math.PI * 4)
-                    * 22;
+break;
 
-                rotation =
-                    Math.sin(p * Math.PI * 2)
-                    * 0.04;
+case"shake":
 
-                break;
+x=Math.sin(p*Math.PI*20)*12*(1-p);
+rotation=Math.sin(p*Math.PI*16)*.06*(1-p);
 
-            case "shake":
+break;
 
-                x =
-                    Math.sin(p * Math.PI * 20)
-                    * 12
-                    * (1 - p);
+case"pop":
 
-                rotation =
-                    Math.sin(p * Math.PI * 16)
-                    * 0.06
-                    * (1 - p);
+if(p<.7){
 
-                break;
+const q=p/.7;
+scale=.1+easeOut(q)*1.08;
 
-            case "pop": {
+}else{
 
-                if (p < 0.7) {
+const q=(p-.7)/.3;
+scale=1.08-q*.08;
 
-                    const q = p / 0.7;
+}
 
-                    scale =
-                        0.1 +
-                        easeOut(q) * 1.08;
+break;
 
-                } else {
+case"fade":
 
-                    const q =
-                        (p - 0.7) / 0.3;
+opacity=easeOut(p);
 
-                    scale =
-                        1.08 -
-                        q * 0.08;
-                }
+break;
 
-                break;
-            }
+}
 
-            case "fade":
+return{x,y,scale,rotation,opacity};
 
-                opacity = easeOut(p);
+}
 
-                break;
-        }
 
-        return {
-            x,
-            y,
-            scale,
-            rotation,
-            opacity
-        };
-    }
+// ==========================================
+// DRAW TEXT WITH 3D SUPPORT
+// ==========================================
 
-    // =========================
-    // DRAW TEXT
-    // =========================
+function drawAnimatedText(
+text,
+x,
+y,
+type,
+progress,
+maxWidth
+){
 
-    function drawAnimatedText(
-        text,
-        x,
-        y,
-        fontSize,
-        animation,
-        progress,
-        fill,
-        maxWidth
-    ) {
+if(!text)return;
 
-        if (!text) {
-            return;
-        }
+const s=getTextStyle(type);
 
-        const a = getAnimation(
-            animation,
-            progress
-        );
+const a=getAnimation(
+s.animation,
+progress
+);
 
-        ctx.save();
+ctx.save();
 
-        ctx.translate(
-            x + a.x,
-            y + a.y
-        );
+ctx.translate(
+x+a.x,
+y+a.y
+);
 
-        ctx.rotate(a.rotation);
+ctx.rotate(a.rotation);
 
-        ctx.scale(
-            a.scale,
-            a.scale
-        );
+ctx.scale(
+a.scale,
+a.scale
+);
 
-        ctx.globalAlpha =
-            clamp(a.opacity, 0, 1);
+ctx.globalAlpha=
+clamp(a.opacity,0,1);
 
-        ctx.direction = "rtl";
+ctx.direction="rtl";
+ctx.textAlign="center";
+ctx.textBaseline="middle";
 
-        ctx.textAlign = "center";
+const weight=s.bold?"bold":"normal";
 
-        ctx.textBaseline = "middle";
+ctx.font=
+`${weight} ${s.size}px "${s.font}"`;
 
-        ctx.font =
-            `bold ${fontSize}px Arial`;
 
-        // Glow / shadow
+// ======================================
+// REALISTIC 3D EXTRUSION
+// ======================================
 
-        if (
-            animation === "glow" ||
-            animation === "orbit"
-        ) {
+if(s.style==="3d"){
 
-            ctx.shadowBlur = 22;
+const depth=9;
 
-            ctx.shadowColor = fill;
-        }
+for(let d=depth;d>=1;d--){
 
-        ctx.lineWidth = 8;
+ctx.fillStyle=
+"rgba(0,0,0,.65)";
 
-        ctx.strokeStyle =
-            "rgba(0,0,0,.55)";
+ctx.fillText(
+text,
+d,
+d,
+maxWidth
+);
 
-        ctx.strokeText(
-            text,
-            0,
-            0,
-            maxWidth
-        );
+}
 
-        ctx.fillStyle = fill;
+// extra highlight edge
 
-        ctx.fillText(
-            text,
-            0,
-            0,
-            maxWidth
-        );
+ctx.strokeStyle="rgba(255,255,255,.25)";
+ctx.lineWidth=2;
 
-        ctx.restore();
-    }
+ctx.strokeText(
+text,
+0,
+0,
+maxWidth
+);
 
-    // =========================
-    // PRODUCT IMAGE
-    // =========================
+}
 
-    function drawProduct(progress) {
 
-        const centerX =
-            canvas.width / 2;
+// ======================================
+// NORMAL TEXT
+// ======================================
 
-        const centerY = 410;
+ctx.lineWidth=7;
 
-        const boxW = 430;
+ctx.strokeStyle=
+"rgba(0,0,0,.55)";
 
-        const boxH = 360;
+ctx.strokeText(
+text,
+0,
+0,
+maxWidth
+);
 
-        // Card shadow
+ctx.fillStyle=s.color;
 
-        ctx.save();
+ctx.fillText(
+text,
+0,
+0,
+maxWidth
+);
 
-        ctx.shadowBlur = 30;
+ctx.restore();
 
-        ctx.shadowOffsetY = 15;
+}
 
-        ctx.shadowColor =
-            "rgba(0,0,0,.45)";
 
-        roundedRect(
-            ctx,
-            centerX - boxW / 2,
-            centerY - boxH / 2,
-            boxW,
-            boxH,
-            30
-        );
+// ==========================================
+// WRAP TEXT
+// ==========================================
 
-        ctx.fillStyle =
-            "rgba(255,255,255,.97)";
+function wrapText(text,maxWidth,fontSize,font,bold){
 
-        ctx.fill();
+const weight=bold?"bold":"normal";
 
-        ctx.restore();
+ctx.font=
+`${weight} ${fontSize}px "${font}"`;
 
-        if (!productImage) {
+const words=String(text||"").split(/\s+/);
 
-            ctx.save();
+const lines=[];
 
-            ctx.fillStyle = "#374151";
+let current="";
 
-            ctx.font =
-                "bold 25px Arial";
+for(const word of words){
 
-            ctx.textAlign = "center";
+const test=
+current
+?current+" "+word
+:word;
 
-            ctx.textBaseline = "middle";
+if(ctx.measureText(test).width<=maxWidth){
 
-            ctx.fillText(
-                "📷 PRODUCT IMAGE",
-                centerX,
-                centerY
-            );
+current=test;
 
-            ctx.restore();
+}else{
 
-            return;
-        }
+if(current)lines.push(current);
 
-        const img = productImage;
+current=word;
 
-        const imageProgress =
-            (Math.sin(
-                progress * Math.PI * 2
-            ) + 1) / 2;
+}
 
-        const zoom =
-            1 +
-            imageProgress * 0.045;
+}
 
-        const maxW = 390 * zoom;
+if(current)lines.push(current);
 
-        const maxH = 320 * zoom;
+return lines;
 
-        const ratio =
-            Math.min(
-                maxW / img.width,
-                maxH / img.height
-            );
+}
 
-        const w =
-            img.width * ratio;
 
-        const h =
-            img.height * ratio;
+// ==========================================
+// BACKGROUND
+// ==========================================
 
-        const x =
-            centerX - w / 2;
+function drawBackground(progress){
 
-        const y =
-            centerY - h / 2;
+const gradient=
+ctx.createLinearGradient(
+0,0,
+canvas.width,
+canvas.height
+);
 
-        ctx.save();
+gradient.addColorStop(0,"#111827");
+gradient.addColorStop(.5,"#1e3a8a");
+gradient.addColorStop(1,"#581c87");
 
-        // Slight 3D-like movement
+ctx.fillStyle=gradient;
 
-        const tilt =
-            Math.sin(
-                progress * Math.PI * 2
-            ) * 0.035;
+ctx.fillRect(
+0,0,
+canvas.width,
+canvas.height
+);
 
-        ctx.translate(
-            centerX,
-            centerY
-        );
+for(let i=0;i<7;i++){
 
-        ctx.transform(
-            1,
-            tilt,
-            tilt,
-            1,
-            0,
-            0
-        );
+const x=
+(i*97+progress*160)
+%(canvas.width+150)-75;
 
-        ctx.translate(
-            -centerX,
-            -centerY
-        );
+const y=
+100+i*125+
+Math.sin(progress*Math.PI*2+i)*25;
 
-        roundedRect(
-            ctx,
-            centerX - boxW / 2 + 8,
-            centerY - boxH / 2 + 8,
-            boxW - 16,
-            boxH - 16,
-            25
-        );
+const radius=25+i*5;
 
-        ctx.clip();
+ctx.beginPath();
 
-        ctx.drawImage(
-            img,
-            x,
-            y,
-            w,
-            h
-        );
+ctx.arc(
+x,y,radius,
+0,
+Math.PI*2
+);
 
-        ctx.restore();
-    }
+ctx.fillStyle=
+"rgba(255,255,255,.055)";
 
-    // =========================
-    // BACKGROUND
-    // =========================
+ctx.fill();
 
-    function drawBackground(progress) {
+}
 
-        const gradient =
-            ctx.createLinearGradient(
-                0,
-                0,
-                canvas.width,
-                canvas.height
-            );
+}
 
-        gradient.addColorStop(
-            0,
-            "#111827"
-        );
 
-        gradient.addColorStop(
-            0.5,
-            "#1e3a8a"
-        );
+// ==========================================
+// PRODUCT IMAGE
+// ==========================================
 
-        gradient.addColorStop(
-            1,
-            "#581c87"
-        );
+function drawProduct(progress){
 
-        ctx.fillStyle = gradient;
+const centerX=canvas.width/2;
+const centerY=410;
 
-        ctx.fillRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
+const boxW=430;
+const boxH=360;
 
-        // Animated circles
+ctx.save();
 
-        for (let i = 0; i < 7; i++) {
+ctx.shadowBlur=30;
+ctx.shadowOffsetY=15;
+ctx.shadowColor="rgba(0,0,0,.45)";
 
-            const x =
-                (i * 97 +
-                progress * 160) %
-                (canvas.width + 150) - 75;
+roundedRect(
+ctx,
+centerX-boxW/2,
+centerY-boxH/2,
+boxW,
+boxH,
+30
+);
 
-            const y =
-                100 +
-                i * 125 +
-                Math.sin(
-                    progress * Math.PI * 2 +
-                    i
-                ) * 25;
+ctx.fillStyle="rgba(255,255,255,.97)";
+ctx.fill();
 
-            const radius =
-                25 + i * 5;
+ctx.restore();
 
-            ctx.beginPath();
+if(!productImage){
 
-            ctx.arc(
-                x,
-                y,
-                radius,
-                0,
-                Math.PI * 2
-            );
+ctx.save();
 
-            ctx.fillStyle =
-                "rgba(255,255,255,.055)";
+ctx.fillStyle="#374151";
 
-            ctx.fill();
-        }
-    }
+ctx.font="bold 25px Arial";
 
-    // =========================
-    // MAIN FRAME
-    // =========================
+ctx.textAlign="center";
+ctx.textBaseline="middle";
 
-    function renderFrame(progress) {
+ctx.fillText(
+"📷 PRODUCT IMAGE",
+centerX,
+centerY
+);
 
-        const W = canvas.width;
-        const H = canvas.height;
+ctx.restore();
 
-        ctx.clearRect(
-            0,
-            0,
-            W,
-            H
-        );
+return;
 
-        drawBackground(progress);
+}
 
-        // Brand top
+const img=productImage;
 
-        drawAnimatedText(
-            brand.value,
-            W / 2,
-            70,
-            34,
-            brandAnimation.value,
-            progress,
-            "#fbbf24",
-            450
-        );
+const imageProgress=
+(Math.sin(progress*Math.PI*2)+1)/2;
 
-        // Product image
+const zoom=1+imageProgress*.045;
 
-        drawProduct(progress);
+const maxW=390*zoom;
+const maxH=320*zoom;
 
-        // Product name
+const ratio=Math.min(
+maxW/img.width,
+maxH/img.height
+);
 
-        drawAnimatedText(
-            productName.value,
-            W / 2,
-            635,
-            38,
-            nameAnimation.value,
-            progress,
-            "#ffffff",
-            500
-        );
+const w=img.width*ratio;
+const h=img.height*ratio;
 
-        // Price box
+const x=centerX-w/2;
+const y=centerY-h/2;
 
-        ctx.save();
+ctx.save();
 
-        roundedRect(
-            ctx,
-            120,
-            685,
-            300,
-            82,
-            25
-        );
+const tilt=
+Math.sin(progress*Math.PI*2)*.035;
 
-        ctx.fillStyle =
-            "rgba(255,255,255,.12)";
+ctx.translate(centerX,centerY);
 
-        ctx.fill();
+ctx.transform(
+1,
+tilt,
+tilt,
+1,
+0,
+0
+);
 
-        ctx.restore();
+ctx.translate(-centerX,-centerY);
 
-        drawAnimatedText(
-            price.value,
-            W / 2,
-            725,
-            42,
-            priceAnimation.value,
-            progress,
-            "#fde047",
-            420
-        );
+roundedRect(
+ctx,
+centerX-boxW/2+8,
+centerY-boxH/2+8,
+boxW-16,
+boxH-16,
+25
+);
 
-        // Delivery
+ctx.clip();
 
-        drawAnimatedText(
-            delivery.value,
-            W / 2,
-            805,
-            27,
-            deliveryAnimation.value,
-            progress,
-            "#86efac",
-            480
-        );
+ctx.drawImage(
+img,
+x,
+y,
+w,
+h
+);
 
-        // Description
+ctx.restore();
 
-        const desc =
-            description.value.trim();
+}
 
-        if (desc) {
 
-            const lines =
-                wrapText(
-                    desc,
-                    440,
-                    20
-                );
+// ==========================================
+// MAIN FRAME
+// ==========================================
 
-            ctx.save();
+function renderFrame(progress){
 
-            ctx.globalAlpha = 0.95;
+const W=canvas.width;
 
-            ctx.font =
-                "bold 20px Arial";
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
 
-            ctx.textAlign =
-                "center";
+drawBackground(progress);
 
-            ctx.textBaseline =
-                "middle";
 
-            ctx.fillStyle =
-                "#f3f4f6";
+// BRAND
 
-            const startY =
-                855 -
-                (lines.length - 1) * 12;
+const brandStyle=getTextStyle("brand");
 
-            lines.forEach(
-                (line, index) => {
+drawAnimatedText(
+brand.value,
+W/2,
+70,
+"brand",
+progress,
+480
+);
 
-                    ctx.fillText(
-                        line,
-                        W / 2,
-                        startY +
-                        index * 27
-                    );
 
-                }
-            );
+// PRODUCT
 
-            ctx.restore();
-        }
+drawProduct(progress);
 
-        // Bottom call-to-action
 
-        ctx.save();
+// PRODUCT NAME
 
-        roundedRect(
-            ctx,
-            150,
-            915,
-            240,
-            35,
-            17
-        );
+drawAnimatedText(
+productName.value,
+W/2,
+635,
+"name",
+progress,
+500
+);
 
-        ctx.fillStyle =
-            "#f59e0b";
 
-        ctx.fill();
+// PRICE BACKGROUND
 
-        ctx.fillStyle =
-            "#111827";
+ctx.save();
 
-        ctx.font =
-            "bold 18px Arial";
+roundedRect(
+ctx,
+120,
+685,
+300,
+82,
+25
+);
 
-        ctx.textAlign =
-            "center";
+ctx.fillStyle="rgba(255,255,255,.12)";
+ctx.fill();
 
-        ctx.textBaseline =
-            "middle";
+ctx.restore();
 
-        ctx.fillText(
-            "ORDER NOW",
-            W / 2,
-            933
-        );
 
-        ctx.restore();
-    }
+// PRICE
 
-    // =========================
-    // PREVIEW
-    // =========================
+drawAnimatedText(
+price.value,
+W/2,
+725,
+"price",
+progress,
+430
+);
 
-    function startPreview() {
 
-        stopEverything();
+// DELIVERY
 
-        previewRunning = true;
+drawAnimatedText(
+delivery.value,
+W/2,
+805,
+"delivery",
+progress,
+480
+);
 
-        const duration =
-            Number(durationInput.value);
 
-        const start =
-            performance.now();
+// DESCRIPTION
 
-        setStatus(
-            "▶ Preview چل رہا ہے..."
-        );
+const ds=getTextStyle("description");
 
-        function loop(now) {
+const desc=description.value.trim();
 
-            if (!previewRunning) {
-                return;
-            }
+if(desc){
 
-            const elapsed =
-                (now - start) / 1000;
+const lines=wrapText(
+desc,
+440,
+ds.size,
+ds.font,
+ds.bold
+);
 
-            const progress =
-                (elapsed % duration) /
-                duration;
+ctx.save();
 
-            renderFrame(progress);
+ctx.globalAlpha=.95;
 
-            animationFrame =
-                requestAnimationFrame(loop);
-        }
+const weight=ds.bold?"bold":"normal";
 
-        animationFrame =
-            requestAnimationFrame(loop);
-    }
+ctx.font=
+`${weight} ${ds.size}px "${ds.font}"`;
 
-    // =========================
-    // STOP
-    // =========================
+ctx.textAlign="center";
+ctx.textBaseline="middle";
 
-    function stopEverything() {
+const startY=
+855-(lines.length-1)*(ds.size*.65);
 
-        previewRunning = false;
+lines.forEach((line,index)=>{
 
-        if (animationFrame) {
+if(ds.style==="3d"){
 
-            cancelAnimationFrame(
-                animationFrame
-            );
+for(let d=7;d>=1;d--){
 
-            animationFrame = null;
-        }
+ctx.fillStyle="rgba(0,0,0,.55)";
 
-        if (
-            recorder &&
-            recorder.state !== "inactive"
-        ) {
+ctx.fillText(
+line,
+W/2+d,
+startY+index*(ds.size+8)+d
+);
 
-            recorder.stop();
-        }
-    }
+}
 
-    // =========================
-    // VIDEO CREATION
-    // =========================
+}
 
-    function createVideo() {
+ctx.fillStyle=ds.color;
 
-        stopEverything();
+ctx.fillText(
+line,
+W/2,
+startY+index*(ds.size+8)
+);
 
-        if (
-            !canvas.captureStream ||
-            !window.MediaRecorder
-        ) {
+});
 
-            setStatus(
-                "❌ آپ کے browser میں video recording support نہیں ہے۔ Google Chrome کا تازہ ورژن استعمال کریں۔"
-            );
+ctx.restore();
 
-            return;
-        }
+}
 
-        const duration =
-            Number(durationInput.value);
 
-        const stream =
-            canvas.captureStream(30);
+// ORDER BUTTON
 
-        let mimeType =
-            "video/webm;codecs=vp9";
+ctx.save();
 
-        if (
-            !MediaRecorder.isTypeSupported(
-                mimeType
-            )
-        ) {
+roundedRect(
+ctx,
+150,
+915,
+240,
+35,
+17
+);
 
-            mimeType =
-                "video/webm;codecs=vp8";
-        }
+ctx.fillStyle="#f59e0b";
+ctx.fill();
 
-        if (
-            !MediaRecorder.isTypeSupported(
-                mimeType
-            )
-        ) {
+ctx.fillStyle="#111827";
 
-            mimeType = "video/webm";
-        }
+ctx.font="bold 18px Arial";
 
-        try {
+ctx.textAlign="center";
+ctx.textBaseline="middle";
 
-            recorder =
-                new MediaRecorder(
-                    stream,
-                    {
-                        mimeType,
-                        videoBitsPerSecond:
-                            5_000_000
-                    }
-                );
+ctx.fillText(
+"ORDER NOW",
+W/2,
+933
+);
 
-        } catch (error) {
+ctx.restore();
 
-            setStatus(
-                "❌ Recorder start نہیں ہو سکا: " +
-                error.message
-            );
+}
 
-            return;
-        }
 
-        recordedChunks = [];
+// ==========================================
+// PREVIEW
+// ==========================================
 
-        recorder.ondataavailable =
-            function (event) {
+function startPreview(){
 
-                if (
-                    event.data &&
-                    event.data.size > 0
-                ) {
+stopEverything();
 
-                    recordedChunks.push(
-                        event.data
-                    );
-                }
-            };
+previewRunning=true;
 
-        recorder.onerror =
-            function (event) {
+const duration=
+Number(durationInput.value);
 
-                setStatus(
-                    "❌ Video recording error."
-                );
+const start=performance.now();
 
-                recording = false;
-            };
+setStatus("▶ Preview چل رہا ہے...");
 
-        recorder.onstop =
-            function () {
+function loop(now){
 
-                recording = false;
+if(!previewRunning)return;
 
-                const blob =
-                    new Blob(
-                        recordedChunks,
-                        {
-                            type: mimeType
-                        }
-                    );
+const elapsed=
+(now-start)/1000;
 
-                if (videoUrl) {
+const progress=
+(elapsed%duration)/duration;
 
-                    URL.revokeObjectURL(
-                        videoUrl
-                    );
-                }
+renderFrame(progress);
 
-                videoUrl =
-                    URL.createObjectURL(
-                        blob
-                    );
+animationFrame=
+requestAnimationFrame(loop);
 
-                downloadLink.href =
-                    videoUrl;
+}
 
-                downloadLink.download =
-                    "product-video.webm";
+animationFrame=
+requestAnimationFrame(loop);
 
-                downloadLink.style.display =
-                    "inline-block";
+}
 
-                setStatus(
-                    "✅ Video تیار ہے۔ Download Video دبائیں۔"
-                );
-            };
 
-        downloadLink.style.display =
-            "none";
+// ==========================================
+// STOP
+// ==========================================
 
-        recording = true;
+function stopEverything(){
 
-        setStatus(
-            "🎥 Video بن رہی ہے... " +
-            duration +
-            " seconds انتظار کریں۔"
-        );
+previewRunning=false;
 
-        recorder.start(100);
+if(animationFrame){
 
-        const start =
-            performance.now();
+cancelAnimationFrame(
+animationFrame
+);
 
-        function recordFrame(now) {
+animationFrame=null;
 
-            if (!recording) {
-                return;
-            }
+}
 
-            const elapsed =
-                (now - start) / 1000;
+if(
+recorder &&
+recorder.state!=="inactive"
+){
 
-            const progress =
-                clamp(
-                    elapsed / duration,
-                    0,
-                    1
-                );
+recorder.stop();
 
-            renderFrame(progress);
+}
 
-            if (elapsed >= duration) {
+}
 
-                renderFrame(1);
 
-                setTimeout(
-                    function () {
+// ==========================================
+// CREATE VIDEO
+// ==========================================
 
-                        if (
-                            recorder &&
-                            recorder.state !==
-                            "inactive"
-                        ) {
+function createVideo(){
 
-                            recorder.stop();
-                        }
+stopEverything();
 
-                    },
-                    150
-                );
+if(
+!canvas.captureStream||
+!window.MediaRecorder
+){
 
-                return;
-            }
+setStatus(
+"❌ آپ کے browser میں video recording support نہیں ہے۔ Google Chrome استعمال کریں۔"
+);
 
-            animationFrame =
-                requestAnimationFrame(
-                    recordFrame
-                );
-        }
+return;
 
-        animationFrame =
-            requestAnimationFrame(
-                recordFrame
-            );
-    }
+}
 
-    // =========================
-    // RESET
-    // =========================
+const duration=
+Number(durationInput.value);
 
-    function resetAll() {
+const stream=
+canvas.captureStream(30);
 
-        stopEverything();
+let mimeType=
+"video/webm;codecs=vp9";
 
-        productImage = null;
+if(!MediaRecorder.isTypeSupported(mimeType)){
 
-        imageInput.value = "";
+mimeType=
+"video/webm;codecs=vp8";
 
-        productName.value =
-            "Beautiful Product";
+}
 
-        price.value =
-            "Rs. 999";
+if(!MediaRecorder.isTypeSupported(mimeType)){
 
-        delivery.value =
-            "FREE DELIVERY";
+mimeType="video/webm";
 
-        brand.value =
-            "WAQAR";
+}
 
-        description.value =
-            "High quality product. Order now and get it delivered to your doorstep.";
+try{
 
-        orderLink.value = "";
+recorder=
+new MediaRecorder(
+stream,
+{
+mimeType,
+videoBitsPerSecond:5000000
+}
+);
 
-        durationInput.value =
-            "15";
+}catch(error){
 
-        nameAnimation.value =
-            "static";
+setStatus(
+"❌ Recorder start نہیں ہو سکا: "+
+error.message
+);
 
-        priceAnimation.value =
-            "zoom";
+return;
 
-        deliveryAnimation.value =
-            "float";
+}
 
-        brandAnimation.value =
-            "orbit";
+recordedChunks=[];
 
-        downloadLink.style.display =
-            "none";
+recorder.ondataavailable=e=>{
 
-        if (videoUrl) {
+if(
+e.data &&
+e.data.size>0
+){
 
-            URL.revokeObjectURL(
-                videoUrl
-            );
+recordedChunks.push(e.data);
 
-            videoUrl = null;
-        }
+}
 
-        renderFrame(0);
+};
 
-        setStatus(
-            "Reset ہوگیا۔ اب Product Image لگائیں۔"
-        );
-    }
+recorder.onerror=()=>{
 
-    // =========================
-    // LIVE PREVIEW WHEN TEXT CHANGES
-    // =========================
+setStatus(
+"❌ Video recording error."
+);
 
-    const liveInputs = [
-        productName,
-        price,
-        delivery,
-        brand,
-        description,
-        nameAnimation,
-        priceAnimation,
-        deliveryAnimation,
-        brandAnimation
-    ];
+recording=false;
 
-    liveInputs.forEach(
-        function (element) {
+};
 
-            element.addEventListener(
-                "input",
-                function () {
+recorder.onstop=()=>{
 
-                    if (!previewRunning &&
-                        !recording) {
+recording=false;
 
-                        renderFrame(0);
-                    }
+const blob=
+new Blob(
+recordedChunks,
+{type:mimeType}
+);
 
-                }
-            );
+if(videoUrl){
 
-            element.addEventListener(
-                "change",
-                function () {
+URL.revokeObjectURL(
+videoUrl
+);
 
-                    if (!previewRunning &&
-                        !recording) {
+}
 
-                        renderFrame(0);
-                    }
+videoUrl=
+URL.createObjectURL(blob);
 
-                }
-            );
+downloadLink.href=videoUrl;
 
-        }
-    );
+downloadLink.download=
+"product-video.webm";
 
-    // =========================
-    // BUTTONS
-    // =========================
+downloadLink.style.display=
+"inline-block";
 
-    previewBtn.addEventListener(
-        "click",
-        startPreview
-    );
+setStatus(
+"✅ Video تیار ہے۔ Download Video دبائیں۔"
+);
 
-    createBtn.addEventListener(
-        "click",
-        createVideo
-    );
+};
 
-    stopBtn.addEventListener(
-        "click",
-        function () {
+downloadLink.style.display="none";
 
-            stopEverything();
+recording=true;
 
-            renderFrame(0);
+setStatus(
+"🎥 Video بن رہی ہے... "+
+duration+
+" seconds انتظار کریں۔"
+);
 
-            setStatus(
-                "⛔ Stopped."
-            );
+recorder.start(100);
 
-        }
-    );
+const start=performance.now();
 
-    resetBtn.addEventListener(
-        "click",
-        resetAll
-    );
+function recordFrame(now){
 
-    // =========================
-    // INITIAL SCREEN
-    // =========================
+if(!recording)return;
 
-    renderFrame(0);
+const elapsed=
+(now-start)/1000;
+
+const progress=
+clamp(elapsed/duration,0,1);
+
+renderFrame(progress);
+
+if(elapsed>=duration){
+
+renderFrame(1);
+
+setTimeout(()=>{
+
+if(
+recorder &&
+recorder.state!=="inactive"
+){
+
+recorder.stop();
+
+}
+
+},150);
+
+return;
+
+}
+
+animationFrame=
+requestAnimationFrame(recordFrame);
+
+}
+
+animationFrame=
+requestAnimationFrame(recordFrame);
+
+}
+
+
+// ==========================================
+// RESET
+// ==========================================
+
+function resetAll(){
+
+stopEverything();
+
+productImage=null;
+
+imageInput.value="";
+
+productName.value="Beautiful Product";
+price.value="Rs. 999";
+delivery.value="FREE DELIVERY";
+brand.value="WAQAR";
+
+description.value=
+"High quality product. Order now and get it delivered to your doorstep.";
+
+orderLink.value="";
+
+durationInput.value="15";
+
+
+// Brand
+
+document.getElementById("brandFont").value="Arial Black";
+document.getElementById("brandSize").value="50";
+document.getElementById("brandColor").value="#fbbf24";
+document.getElementById("brandColorCode").value="#FBBF24";
+document.getElementById("brandBold").checked=true;
+document.getElementById("brandStyle").value="3d";
+document.getElementById("brandAnimation").value="orbit";
+
+
+// Name
+
+document.getElementById("nameFont").value="Arial";
+document.getElementById("nameSize").value="38";
+document.getElementById("nameColor").value="#ffffff";
+document.getElementById("nameColorCode").value="#FFFFFF";
+document.getElementById("nameBold").checked=true;
+document.getElementById("nameStyle").value="normal";
+document.getElementById("nameAnimation").value="slideLeft";
+
+
+// Price
+
+document.getElementById("priceFont").value="Impact";
+document.getElementById("priceSize").value="42";
+document.getElementById("priceColor").value="#fde047";
+document.getElementById("priceColorCode").value="#FDE047";
+document.getElementById("priceBold").checked=true;
+document.getElementById("priceStyle").value="3d";
+document.getElementById("priceAnimation").value="zoom";
+
+
+// Delivery
+
+document.getElementById("deliveryFont").value="Arial Black";
+document.getElementById("deliverySize").value="30";
+document.getElementById("deliveryColor").value="#86efac";
+document.getElementById("deliveryColorCode").value="#86EFAC";
+document.getElementById("deliveryBold").checked=true;
+document.getElementById("deliveryStyle").value="normal";
+document.getElementById("deliveryAnimation").value="float";
+
+
+// Description
+
+document.getElementById("descriptionFont").value="Arial";
+document.getElementById("descriptionSize").value="18";
+document.getElementById("descriptionColor").value="#f3f4f6";
+document.getElementById("descriptionColorCode").value="#F3F4F6";
+document.getElementById("descriptionBold").checked=false;
+document.getElementById("descriptionStyle").value="normal";
+
+
+downloadLink.style.display="none";
+
+if(videoUrl){
+
+URL.revokeObjectURL(videoUrl);
+
+videoUrl=null;
+
+}
+
+renderFrame(0);
+
+setStatus(
+"Reset ہوگیا۔ اب Product Image لگائیں۔"
+);
+
+}
+
+
+// ==========================================
+// LIVE UPDATE
+// ==========================================
+
+const liveInputs=[
+
+productName,
+price,
+delivery,
+brand,
+description,
+
+...document.querySelectorAll(
+"select,input[type=number],input[type=checkbox]"
+)
+
+];
+
+liveInputs.forEach(element=>{
+
+element.addEventListener(
+"input",
+()=>{
+
+if(!previewRunning&&!recording){
+
+renderFrame(0);
+
+}
+
+}
+);
+
+element.addEventListener(
+"change",
+()=>{
+
+if(!previewRunning&&!recording){
+
+renderFrame(0);
+
+}
+
+}
+);
+
+});
+
+
+// ==========================================
+// BUTTONS
+// ==========================================
+
+previewBtn.addEventListener(
+"click",
+startPreview
+);
+
+createBtn.addEventListener(
+"click",
+createVideo
+);
+
+stopBtn.addEventListener(
+"click",
+()=>{
+
+stopEverything();
+
+renderFrame(0);
+
+setStatus("⛔ Stopped.");
+
+}
+);
+
+resetBtn.addEventListener(
+"click",
+resetAll
+);
+
+
+// ==========================================
+// INITIAL
+// ==========================================
+
+renderFrame(0);
 
 })();
